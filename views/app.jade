@@ -1,0 +1,19 @@
+extends layout
+
+block content
+    div(ng-controller='listCtrl')
+        h3 Deployed Apps
+            ul(ng-repeat='app in apps')
+                li {{app}} 
+                    a(ng-hide='started(app)', ng-click='startApp(app)') Start
+                    a(ng-show='started(app)', ng-click='stopApp(app)') Stop
+                    a(ng-click='deleteApp(app)') Delete
+                    a(ng-click='updateApp(app)') Update
+        h3 Your Apps
+            ul(ng-repeat='repo in repos')
+                li(ng-hide='deployed(repo.name)') {{repo.name}} 
+                    a(ng-click='deploy(repo.clone_url, repo.name)') deploy
+        h3 Your Orgs
+            ul(ng-repeat='org in orgs')
+                li {{org.login}} 
+                    a(ng-click='orgRepos(org.login)') Show Repos

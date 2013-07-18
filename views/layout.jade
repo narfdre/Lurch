@@ -1,0 +1,22 @@
+doctype 5
+html(ng-app='Lurch')
+  head
+    title= Lurch
+    link(rel='stylesheet', href='/stylesheets/bootstrap.css')
+    link(rel='stylesheet', href='/stylesheets/style.css')
+  body
+    div.navbar.navbar-fixed-top
+        div.navbar-inner
+            div.container
+                a.brand(href='#') Lurch
+                ul.nav
+                if user
+                    ul.nav.pull-right
+                        li
+                            a.pull-right(href='/logout') Logout
+                        li
+                            a.pull-right #{user}
+    div.container
+        block content
+    script(src='/javascripts/libs/angular.min.js')
+    script(src='/javascripts/index.js')
