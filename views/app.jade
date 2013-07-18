@@ -2,18 +2,35 @@ extends layout
 
 block content
     div(ng-controller='listCtrl')
-        h3 Deployed Apps
-            ul(ng-repeat='app in apps')
-                li {{app}} 
-                    a(ng-hide='started(app)', ng-click='startApp(app)') Start
-                    a(ng-show='started(app)', ng-click='stopApp(app)') Stop
-                    a(ng-click='deleteApp(app)') Delete
-                    a(ng-click='updateApp(app)') Update
-        h3 Your Apps
-            ul(ng-repeat='repo in repos')
-                li(ng-hide='deployed(repo.name)') {{repo.name}} 
-                    a(ng-click='deploy(repo.clone_url, repo.name)') deploy
-        h3 Your Orgs
-            ul(ng-repeat='org in orgs')
-                li {{org.login}} 
-                    a(ng-click='orgRepos(org.login)') Show Repos
+        div.row
+            h3 Deployed Apps
+            table.table.table-striped
+                thead: tr
+                    th name
+                    th action
+                    th delete
+                    th pull
+                thead
+                    tr(ng-repeat='app in apps')
+                            td {{app}} 
+                            td
+                                a(ng-hide='started(app)', ng-click='startApp(app)') Start
+                                a(ng-show='started(app)', ng-click='stopApp(app)') Stop
+                            td: a(ng-click='deleteApp(app)') Delete
+                            td: a(ng-click='updateApp(app)') Update
+            h3 Repos
+            div
+                span Orgs: 
+                select(ng-model='currentOrg', ng-options='org.login for org in orgs')
+                    option(value='') none
+            div.span5
+                table.table.table-striped
+                    thead: tr
+                        th name
+                        th deploy
+                    tbody
+                        tr(ng-repeat='repo in repos', ng-class='{disabled : deployed(repo.name)}')
+                            td: a(ng-click='!deployed(repo.name) && showRepo(repo.owner.login, repo.name)') {{repo.name}}
+                            td: a(ng-click='!deployed(repo.name) && deploy(repo.clone_url, repo.name)') deploy
+                            
+            div.span7

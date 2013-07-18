@@ -4,6 +4,13 @@ Lurch.controller('listCtrl', function($scope, $http){
     loadRepos();
     loadOrgs();
 
+    $scope.$watch('currentOrg', function(newVal, oldVal){
+        if(newVal)
+            console.log(newVal.login);
+        else
+            console.log('none');
+    })
+
     $scope.deployed = function(repo){
         if($scope.apps.indexOf(repo) != -1){
             return true;
@@ -12,7 +19,7 @@ Lurch.controller('listCtrl', function($scope, $http){
     };
 
     $scope.started = function(repo){
-        if($scope.running.indexOf(repo) != -1){
+        if($scope.running && $scope.running.indexOf(repo) != -1){
             return true;
         }
         return false;
@@ -67,6 +74,13 @@ Lurch.controller('listCtrl', function($scope, $http){
         $http.get('/api/v1/git/repos/' + org)
             .success(function(repos){
                 $scope.repos = $scope.repos.concat(repos);
+            });
+    }
+
+    $scope.showRepo = function(owner, repo){
+        $http.get('/api/v1/git/' + owner + '/' + repo)
+            .success(function(repo){
+                $scope.currentRepo = repo;
             });
     }
 

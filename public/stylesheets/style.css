@@ -1,3 +1,7 @@
 body {
   padding: 40px;
 }
+
+.disabled{background-color: rgba(150,150,150,0.1);}
+.disabled a{color: rgba(0,0,0,0.6);}
+.disabled a:hover{text-decoration: none;}
