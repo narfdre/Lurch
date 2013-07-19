@@ -2,10 +2,11 @@ var express = require('express')
   , passport= require('passport')
   , github  = require('passport-github').Strategy
   , routes 	= require('./routes')
-  , api		= require('./api')
-  , http 	= require('http')
-  , path 	= require('path')
-  , storage = require('node-persist');
+  , api		  = require('./api')
+  , http 	  = require('http')
+  , path 	  = require('path')
+  , Nedb    = require('nedb')
+  , usersdb  = new Nedb({ filename: 'db/users.db', autoload: true });
 
 passport.serializeUser(function(user, done) { done(null, user); });
 passport.deserializeUser(function(obj, done) { done(null, obj); });
@@ -17,16 +18,18 @@ passport.use(new github({
     scope: "user,repo"
   },
   function(accessToken, refreshToken, profile, done) {
-  	storage.setItem(profile.username, accessToken);
-    process.nextTick(function () {
-      return done(null, profile);
+    usersdb.update({ name: profile.username }, 
+                   { name: profile.username, token: accessToken, profile: profile }, 
+                   { upsert: true }, 
+                   function (err, numReplaced, upsert) {
+                      console.log(err, numReplaced, upsert);
+                      return done(null, profile);
     });
   }
 ));
 
 
 var app = express();
-storage.initSync();
 
 // all environments
 app.set('port', process.env.PORT || 3000);
@@ -73,7 +76,6 @@ app.get('/github/auth',
 //API V1
 app.get('/api/v1/apps', api.v1.listApps);
 app.post('/api/v1/apps', api.v1.createApp);
-app.get('/api/v1/apps/running', api.v1.runningApps);
 // app.get('/api/v1/apps/:name', api.v1.getApp);
 app.del('/api/v1/apps/:name', api.v1.deleteApp);
 app.put('/api/v1/apps/:name', api.v1.update);
@@ -94,6 +96,12 @@ http.createServer(app).listen(app.get('port'), function(){
 
 //Middleware
 function ensureAuthenticated(req, res, next) {
-  if (req.isAuthenticated()) { return next(); }
-  res.redirect('/');
+  if (req.isAuthenticated()) { 
+    usersdb.findOne({ name: req.user.username }, function (err, doc) {
+      req.user.token = doc.token;
+      return next();
+    });
+  }else{
+    res.redirect('/');
+  }
 }

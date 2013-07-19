@@ -2,33 +2,16 @@ var fs 			= require('fs'),
 	exec 	    = require('child_process').exec,
 	spawn 	    = require('child_process').spawn,
 	rimraf		= require('rimraf'), 
-	storage 	= require('node-persist'),
+	Nedb	  	= require('nedb'),
+	appsdb	  	= new Nedb({ filename: 'db/apps.db', autoload: true }),
 	rootPath 	= require('path').dirname(require.main.filename),
 	appPath 	= rootPath + '/apps'
 	foreman		= rootPath + '/node_modules/foreman/nf.js';
 
 exports.listApps = function(req, res){
-	fs.readdir(appPath, function(err, files){
-		if(err){
-			console.log(err);
-			res.send(500, err);
-		}else{
-			res.send(files);
-		}
+	appsdb.find({}, function(err, docs){
+		res.send(docs);
 	});
-}
-
-exports.runningApps = function(req, res){
-	var runningApps = storage.getItem('apps');
-	var apps = [];
-	for(var name in runningApps){
-		var app = {
-			name : name,
-			pid: runningApps[name].pid
-		}
-		apps.push(name);
-	}
-	res.send(200, apps);
 }
 
 exports.createApp = function(req, res){
@@ -61,7 +44,9 @@ exports.deleteApp = function(req, res){
 			console.log(err);
 			res.send(500, err);
 		}else{
-			res.send(200);
+			appsdb.remove({name: appName}, function(err, removed){
+				res.send(200);
+			});
 		}
 	});
 }

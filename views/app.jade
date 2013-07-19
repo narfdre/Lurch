@@ -12,12 +12,12 @@ block content
                     th pull
                 thead
                     tr(ng-repeat='app in apps')
-                            td {{app}} 
+                            td {{app.name}} 
                             td
-                                a(ng-hide='started(app)', ng-click='startApp(app)') Start
-                                a(ng-show='started(app)', ng-click='stopApp(app)') Stop
-                            td: a(ng-click='deleteApp(app)') Delete
-                            td: a(ng-click='updateApp(app)') Update
+                                a(ng-hide='app.pid != 0', ng-click='startApp(app.name)') Start
+                                a(ng-show='app.pid != 0', ng-click='stopApp(app.name)') Stop
+                            td: a(ng-click='deleteApp(app.name)') Delete
+                            td: a(ng-click='updateApp(app.name)') Update
             h3 Repos
             div
                 span Orgs: 

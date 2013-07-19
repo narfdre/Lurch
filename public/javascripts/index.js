@@ -12,15 +12,10 @@ Lurch.controller('listCtrl', function($scope, $http){
     })
 
     $scope.deployed = function(repo){
-        if($scope.apps.indexOf(repo) != -1){
-            return true;
-        }
-        return false;
-    };
-
-    $scope.started = function(repo){
-        if($scope.running && $scope.running.indexOf(repo) != -1){
-            return true;
+        for(var i in $scope.apps){
+            if($scope.apps[i].name === repo){
+                return true;
+            }
         }
         return false;
     };
@@ -40,10 +35,10 @@ Lurch.controller('listCtrl', function($scope, $http){
             });
     };
 
-    $scope.startApp = function(app){
-        $http.post('/api/v1/apps/' + app + '/start', {})
-            .success(function(){
-                $scope.running.push(app);
+    $scope.startApp = function(appName){
+        $http.post('/api/v1/apps/' + appName + '/start', {})
+            .success(function(app){
+                $scope.apps.push(app);
             });
     };
 
@@ -88,10 +83,6 @@ Lurch.controller('listCtrl', function($scope, $http){
         $http.get('/api/v1/apps')
             .success(function(apps){
                 $scope.apps = apps;
-            });
-        $http.get('api/v1/apps/running')
-            .success(function(running){
-                $scope.running = running;
             });
         $http.get('api/v1/git/repos')
             .success(function(repos){
