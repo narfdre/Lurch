@@ -60,8 +60,9 @@ exports.deployRepo = function(req, res){
 						  , port: 3001
 						  , pid : 0
 						  , live: false};
+		appsdb.loadDatabase();
 		appsdb.insert(Application, function (err, newDoc) {
-			res.send(200, {code: code, app: newDoc});
+			res.send(200, newDoc);
 		});
 	});
 }

@@ -14,8 +14,8 @@ block content
                     tr(ng-repeat='app in apps')
                             td {{app.name}} 
                             td
-                                a(ng-hide='app.pid != 0', ng-click='startApp(app.name)') Start
-                                a(ng-show='app.pid != 0', ng-click='stopApp(app.name)') Stop
+                                a(ng-hide='app.pid != 0', ng-click='startApp(app)') Start
+                                a(ng-show='app.pid != 0', ng-click='stopApp(app)') Stop
                             td: a(ng-click='deleteApp(app.name)') Delete
                             td: a(ng-click='updateApp(app.name)') Update
             h3 Repos

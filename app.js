@@ -6,7 +6,9 @@ var express = require('express')
   , http 	  = require('http')
   , path 	  = require('path')
   , Nedb    = require('nedb')
-  , usersdb  = new Nedb({ filename: 'db/users.db', autoload: true });
+  , usersdb = new Nedb({ filename: 'db/users.db', autoload: true })
+  , appsdb  = new Nedb({ filename: 'db/apps.db', autoload: true})
+  , exec    = require('child_process').exec;
 
 passport.serializeUser(function(user, done) { done(null, user); });
 passport.deserializeUser(function(obj, done) { done(null, obj); });
@@ -81,7 +83,7 @@ app.del('/api/v1/apps/:name', api.v1.deleteApp);
 app.put('/api/v1/apps/:name', api.v1.update);
 app.post('/api/v1/apps/:name/start', api.v1.start);
 app.post('/api/v1/apps/:name/stop', api.v1.stop);
-// app.get('/api/v1/apps/:name/logs', api.v1.getAppLogs);
+app.get('/api/v1/apps/:name/logs', api.v1.getAppLogs);
 app.get('/api/v1/apps/:name/exists', api.v1.exists);
 
 app.get('/api/v1/git/orgs', ensureAuthenticated, api.v1.orgs);
@@ -90,7 +92,9 @@ app.get('/api/v1/git/repos/:org', ensureAuthenticated,  api.v1.orgRepos);
 app.post('/api/v1/git/clone', ensureAuthenticated,  api.v1.deploy);
 
 http.createServer(app).listen(app.get('port'), function(){
-  console.log('Express server listening on port ' + app.get('port'));
+  console.log('You Rang?');
+  console.log('Lurch is serving on port ' + app.get('port'));
+  checkForRunningApps();
 });
 
 
@@ -104,4 +108,41 @@ function ensureAuthenticated(req, res, next) {
   }else{
     res.redirect('/');
   }
+}
+
+//Start up process
+function checkForRunningApps(){
+  console.log("Checking if there are any running apps...");
+  appsdb.loadDatabase();
+  appsdb.find({}, function (err, docs) {
+      if(err){
+        console.log(err);
+      }
+      console.log("found", docs.length, docs.length > 1 ? "apps" : "app");
+      for(i in docs){
+        console.log("checking if '", docs[i].name, "' is still running");
+        if(docs[i].pid != 0){
+          var command = ['ps', 'aux', '|', 'grep', docs[i].pid, '|', 'grep', '-v', 'grep', '|', 'wc', '-l'].join(' ');
+          var child = exec(command, 
+                          function(error, stdout, stderr){
+                            if(stdout > 0){
+                              console.log('---Looks like its still running.');
+                            }else{
+                              console.log('---Nope, its not running');
+                              appsdb.update({ name: docs[i].name}, { $set: { pid: 0}}, {}, function (err, numReplaced) {
+                                  if(err){
+                                    console.log(err);
+                                    console.log('---Well, Lurch could not update this app. You might see some issues. To fix any issues with this app delete it and redeploy.');
+                                  }
+                                  if(numReplaced > 0){
+                                    console.log("---updated app!");
+                                  }
+                              });
+                            }
+                          });
+        }else{
+          console.log('---Nope, it is not running');
+        }
+      }
+  });
 }

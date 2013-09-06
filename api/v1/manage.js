@@ -3,12 +3,13 @@ var fs 			= require('fs'),
 	spawn 	    = require('child_process').spawn,
 	rimraf		= require('rimraf'), 
 	Nedb	  	= require('nedb'),
-	appsdb	  	= new Nedb({ filename: 'db/apps.db', autoload: true }),
+	appsdb	  	= new Nedb({ filename: 'db/apps.db'}),
 	rootPath 	= require('path').dirname(require.main.filename),
 	appPath 	= rootPath + '/apps'
 	foreman		= rootPath + '/node_modules/foreman/nf.js';
 
 exports.listApps = function(req, res){
+	appsdb.loadDatabase();
 	appsdb.find({}, function(err, docs){
 		res.send(docs);
 	});
@@ -44,6 +45,7 @@ exports.deleteApp = function(req, res){
 			console.log(err);
 			res.send(500, err);
 		}else{
+			appsdb.loadDatabase();
 			appsdb.remove({name: appName}, function(err, removed){
 				res.send(200);
 			});
@@ -60,25 +62,37 @@ exports.startApp = function(req, res){
 					 detached: true,
 					 stdio: [ 'ignore', out, out ]
 					});
-	var runningApps = storage.getItem('apps') || {};
-	runningApps[appName] = start.pid;
-	storage.setItem('apps', runningApps);
-	res.send(202);
+	var pid = start.pid;
+	appsdb.loadDatabase();
+	appsdb.update({ name: appName}, { $set: { pid: pid}}, {}, function (err, numReplaced) {
+  		if(err){
+  			console.log(err);
+  		}
+  		res.send({pid: pid});
+	});
 }
 
 exports.stopApp = function(req, res){
 	var appName = req.params.name;
-	var runningApps = storage.getItem('apps');
-	var pid = runningApps[appName];
-	var command = ['kill', pid].join(' ');
-	var clone = exec(command, function(error, stdOut, stdErr){
-		if(!error){
-			delete runningApps[appName];
-			storage.setItem('apps', runningApps);
-			res.send(200);
-		}else{
-			res.send(500, error);
-		}
+	appsdb.loadDatabase();
+	appsdb.findOne({name: appName}, function (err, doc) {
+  		if(err){
+  			console.log(err);
+  		}
+  		var command = ['kill', doc.pid].join(' ');
+		var clone = exec(command, function(error, stdOut, stdErr){
+			if(!error){
+				appsdb.update({ name: appName}, { $set: { pid: 0}}, {}, function (err, numReplaced) {
+			  		if(err){
+			  			console.log(err);
+			  			res.send(500, err);
+			  		}
+			  		res.send({pid: 0});
+				});
+			}else{
+				res.send(500, error);
+			}
+		});
 	});
 }
 
@@ -95,5 +109,13 @@ exports.updateRepo = function(req, res){
 	pull.on('exit', function(code){
 		console.log('process exited');
 		res.send(202, code);
+	});
+}
+
+exports.getAppLogs = function(req, res){
+	var appName = req.params.name;
+	var appLogPath = './apps/' + appName + '/out.log';
+	fs.readFile(appLogPath, function(err, data){
+		res.send(200, data);
 	});
 }

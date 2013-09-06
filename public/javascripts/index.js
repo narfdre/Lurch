@@ -23,30 +23,25 @@ Lurch.controller('listCtrl', function($scope, $http){
     $scope.deploy = function(url, app){
         $http.post('api/v1/git/clone', 
                     {url : url, app : app})
-            .success(function(){
+            .success(function(app){
                 $scope.apps.push(app);
             })
             .error(function(error, code){
-                if(error){
-                    console.log(error)
-                }else{
-                    $scope.apps.push(app);
-                }
+                console.log(error)
             });
     };
 
-    $scope.startApp = function(appName){
-        $http.post('/api/v1/apps/' + appName + '/start', {})
-            .success(function(app){
-                $scope.apps.push(app);
+    $scope.startApp = function(app){
+        $http.post('/api/v1/apps/' + app.name + '/start', {})
+            .success(function(pid){
+                app.pid = pid;
             });
     };
 
     $scope.stopApp = function(app){
-        $http.post('/api/v1/apps/' + app + '/stop', {})
+        $http.post('/api/v1/apps/' + app.name + '/stop', {})
             .success(function(){
-                var position = $scope.running.indexOf(app);
-                $scope.running.splice(position, 1);
+                app.pid = 0;
             });
     };
 
