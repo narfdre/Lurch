@@ -80,11 +80,12 @@ app.get('/api/v1/apps', api.v1.listApps);
 app.post('/api/v1/apps', api.v1.createApp);
 // app.get('/api/v1/apps/:name', api.v1.getApp);
 app.del('/api/v1/apps/:name', api.v1.deleteApp);
-app.put('/api/v1/apps/:name', api.v1.update);
+app.put('/api/v1/apps/:name/pull', api.v1.pull);
 app.post('/api/v1/apps/:name/start', api.v1.start);
 app.post('/api/v1/apps/:name/stop', api.v1.stop);
 app.get('/api/v1/apps/:name/logs', api.v1.getAppLogs);
 app.get('/api/v1/apps/:name/exists', api.v1.exists);
+app.put('/api/v1/apps/:name/port/:port', api.v1.changePort);
 
 app.get('/api/v1/git/orgs', ensureAuthenticated, api.v1.orgs);
 app.get('/api/v1/git/repos', ensureAuthenticated,  api.v1.repos);
@@ -144,5 +145,6 @@ function checkForRunningApps(){
           console.log('---Nope, it is not running');
         }
       }
+      console.log("Startup process done...");
   });
 }

@@ -55,20 +55,26 @@ exports.deleteApp = function(req, res){
 
 exports.startApp = function(req, res){
 	var appName = req.params.name;
-	var appLogPath = './apps/' + appName + '/out.log';
-	var out = fs.openSync(appLogPath, 'a');
-	var start = spawn(foreman, ['start', '-p', '3001'], 
-					{cwd: appPath + '/' + appName,
-					 detached: true,
-					 stdio: [ 'ignore', out, out ]
-					});
-	var pid = start.pid;
 	appsdb.loadDatabase();
-	appsdb.update({ name: appName}, { $set: { pid: pid}}, {}, function (err, numReplaced) {
+	appsdb.findOne({ name: appName}, function (err, doc) {
   		if(err){
   			console.log(err);
   		}
-  		res.send({pid: pid});
+  		var appLogPath = './apps/' + appName + '/out.log';
+		var out = fs.openSync(appLogPath, 'a');
+		var start = spawn(foreman, ['start', '-p', doc.port], 
+						{cwd: appPath + '/' + appName,
+						 detached: true,
+						 stdio: [ 'ignore', out, out ]
+						});
+		var pid = start.pid;
+		
+		appsdb.update({ name: appName}, { $set: { pid: pid}}, {}, function (err, numReplaced) {
+	  		if(err){
+	  			console.log(err);
+	  		}
+	  		res.send({pid: pid});
+		});
 	});
 }
 
@@ -96,7 +102,24 @@ exports.stopApp = function(req, res){
 	});
 }
 
-exports.updateRepo = function(req, res){
+exports.changePort = function(req, res){
+	var appName = req.params.name;
+	var port = req.params.port;
+	appsdb.loadDatabase();
+	appsdb.update({ name: appName }, { $set: { port: port } }, {}, function (err, numReplaced) {
+	  if(err){
+	  	console.log(err);
+	  	res.send(500, err);
+	  }
+	  res.send(200, numReplaced)
+	});
+}
+
+exports.getAppLogs = function(req, res){
+	res.send(200);
+}
+
+exports.pullRepo = function(req, res){
 	var appName = req.params.name;
 	var pull = spawn('git', ['pull'], 
 					{cwd: appPath + '/' + appName,

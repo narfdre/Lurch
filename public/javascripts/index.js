@@ -54,7 +54,14 @@ Lurch.controller('listCtrl', function($scope, $http){
     };
 
     $scope.updateApp = function(app){
-        $http.put('/api/v1/apps/' + app)
+        $http.put('/api/v1/apps/' + app + '/pull')
+            .success(function(){
+
+            });
+    }
+
+    $scope.changePort = function(app){
+        $http.put('/api/v1/apps/' + app.name + '/port/' + app.port)
             .success(function(){
 
             });

@@ -10,6 +10,7 @@ block content
                     th action
                     th delete
                     th pull
+                    th port
                 thead
                     tr(ng-repeat='app in apps')
                             td {{app.name}} 
@@ -18,6 +19,7 @@ block content
                                 a(ng-show='app.pid != 0', ng-click='stopApp(app)') Stop
                             td: a(ng-click='deleteApp(app.name)') Delete
                             td: a(ng-click='updateApp(app.name)') Update
+                            td: input(type='text', ng-model='app.port', ng-change='changePort(app)')
             h3 Repos
             div
                 span Orgs: 

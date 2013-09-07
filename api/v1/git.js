@@ -57,9 +57,8 @@ exports.deployRepo = function(req, res){
 
 	clone.on('exit', function(code){
 		var Application = { name: appName
-						  , port: 3001
-						  , pid : 0
-						  , live: false};
+						  , port: 0
+						  , pid : 0};
 		appsdb.loadDatabase();
 		appsdb.insert(Application, function (err, newDoc) {
 			res.send(200, newDoc);
