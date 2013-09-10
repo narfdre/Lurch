@@ -1,14 +1,16 @@
 var Lurch = angular.module('Lurch', []);
 
 Lurch.controller('listCtrl', function($scope, $http){
+    loadApps();
     loadRepos();
     loadOrgs();
 
     $scope.$watch('currentOrg', function(newVal, oldVal){
-        if(newVal)
-            console.log(newVal.login);
-        else
-            console.log('none');
+        if(newVal){
+            orgRepos(newVal.login);
+        }else{
+            loadRepos();
+        }
     })
 
     $scope.deployed = function(repo){
@@ -67,13 +69,6 @@ Lurch.controller('listCtrl', function($scope, $http){
             });
     }
 
-    $scope.orgRepos = function(org){
-        $http.get('/api/v1/git/repos/' + org)
-            .success(function(repos){
-                $scope.repos = $scope.repos.concat(repos);
-            });
-    }
-
     $scope.showRepo = function(owner, repo){
         $http.get('/api/v1/git/' + owner + '/' + repo)
             .success(function(repo){
@@ -81,11 +76,21 @@ Lurch.controller('listCtrl', function($scope, $http){
             });
     }
 
-    function loadRepos(){
+    function orgRepos(org){
+        $http.get('/api/v1/git/repos/' + org)
+            .success(function(repos){
+                $scope.repos = repos;
+            });
+    }
+
+    function loadApps(){
         $http.get('/api/v1/apps')
             .success(function(apps){
                 $scope.apps = apps;
             });
+    }
+
+    function loadRepos(){
         $http.get('api/v1/git/repos')
             .success(function(repos){
                 $scope.repos = repos;
