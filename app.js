@@ -8,7 +8,8 @@ var express = require('express')
   , Nedb    = require('nedb')
   , usersdb = new Nedb({ filename: 'db/users.db', autoload: true })
   , appsdb  = new Nedb({ filename: 'db/apps.db', autoload: true})
-  , exec    = require('child_process').exec;
+  , exec    = require('child_process').exec
+  , fs      = require('fs');
 
 passport.serializeUser(function(user, done) { done(null, user); });
 passport.deserializeUser(function(obj, done) { done(null, obj); });
@@ -95,6 +96,7 @@ app.post('/api/v1/git/clone', ensureAuthenticated,  api.v1.deploy);
 http.createServer(app).listen(app.get('port'), function(){
   console.log('You Rang?');
   console.log('Lurch is serving on port ' + app.get('port'));
+  checkForAppDirectory();
   checkForRunningApps();
 });
 
@@ -112,6 +114,15 @@ function ensureAuthenticated(req, res, next) {
 }
 
 //Start up process
+function checkForAppDirectory(){
+  fs.exists('./apps', function (exists) {
+    if(!exists){
+      console.log('Creating root folder to deploy apps to');
+      fs.mkdirSync('./apps');
+    }
+  });
+}
+
 function checkForRunningApps(){
   console.log("Checking if there are any running apps...");
   appsdb.loadDatabase();
