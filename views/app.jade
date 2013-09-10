@@ -13,13 +13,13 @@ block content
                     th port
                 thead
                     tr(ng-repeat='app in apps')
-                            td {{app.name}} 
+                            td {{app.name}}
                             td
                                 a(ng-hide='app.pid != 0', ng-click='startApp(app)').btn.btn-success Start
                                 a(ng-show='app.pid != 0', ng-click='stopApp(app)').btn.btn-warning Stop
                             td: a(ng-click='deleteApp(app.name)').btn.btn-danger Delete
                             td: a(ng-click='updateApp(app.name)').btn.btn-primary Update
-                            td: input(type='text', ng-model='app.port', ng-change='changePort(app)')
+                            td: input(type='number', ng-model='app.port', ng-change='changePort(app)')
             h3 Repos
             div
                 span Orgs: 

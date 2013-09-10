@@ -104,14 +104,14 @@ exports.stopApp = function(req, res){
 
 exports.changePort = function(req, res){
 	var appName = req.params.name;
-	var port = req.params.port;
+	var port = parseInt(req.params.port);
 	appsdb.loadDatabase();
 	appsdb.update({ name: appName }, { $set: { port: port } }, {}, function (err, numReplaced) {
 	  if(err){
 	  	console.log(err);
 	  	res.send(500, err);
 	  }
-	  res.send(200, numReplaced)
+	  res.send(200)
 	});
 }
 

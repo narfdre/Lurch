@@ -23,12 +23,15 @@ Lurch.controller('listCtrl', function($scope, $http){
     };
 
     $scope.deploy = function(url, app){
+        $scope.apps.push(app);
         $http.post('api/v1/git/clone', 
                     {url : url, app : app})
             .success(function(app){
                 $scope.apps.push(app);
             })
             .error(function(error, code){
+                var position = $scope.apps.indexOf(app);
+                $scope.apps.splice(position, 1);
                 console.log(error)
             });
     };
@@ -63,10 +66,15 @@ Lurch.controller('listCtrl', function($scope, $http){
     }
 
     $scope.changePort = function(app){
-        $http.put('/api/v1/apps/' + app.name + '/port/' + app.port)
+        console.log(app.port);
+        if(isNaN(app.port)){
+            
+        }else{
+            $http.put('/api/v1/apps/' + app.name + '/port/' + app.port)
             .success(function(){
 
             });
+        }
     }
 
     $scope.showRepo = function(owner, repo){

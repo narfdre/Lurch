@@ -132,6 +132,7 @@ function checkForRunningApps(){
       }
       console.log("found", docs.length, docs.length > 1 ? "apps" : "app");
       for(i in docs){
+        console.log(docs[i]);
         console.log("checking if '", docs[i].name, "' is still running");
         if(docs[i].pid != 0){
           var command = ['ps', 'aux', '|', 'grep', docs[i].pid, '|', 'grep', '-v', 'grep', '|', 'wc', '-l'].join(' ');
