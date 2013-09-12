@@ -5,13 +5,15 @@ Lurch.controller('listCtrl', function($scope, $http){
     loadRepos();
     loadOrgs();
 
+    var loading = [];
+
     $scope.$watch('currentOrg', function(newVal, oldVal){
         if(newVal){
             orgRepos(newVal.login);
         }else{
             loadRepos();
         }
-    })
+    });
 
     $scope.deployed = function(repo){
         for(var i in $scope.apps){
@@ -22,16 +24,34 @@ Lurch.controller('listCtrl', function($scope, $http){
         return false;
     };
 
+    $scope.loading = function(appname){
+        if(loading.indexOf(appname) >= 0){
+            return true;
+        }
+        return false;
+    }
+
     $scope.deploy = function(url, app){
-        $scope.apps.push(app);
+        loading.push(app);
+        var port = 0;
+        for(var i in $scope.apps){
+            if($scope.apps[i].port > port){
+                port = $scope.apps[i].port;
+            }
+        }
+        if(port > 0) {
+            port++;
+        }else{
+            port = 3001;
+        }
         $http.post('api/v1/git/clone', 
-                    {url : url, app : app})
+                    {url : url, app : app, port: port})
             .success(function(app){
                 $scope.apps.push(app);
+                var position = loading.indexOf(app);
+                loading.splice(position, 1);
             })
             .error(function(error, code){
-                var position = $scope.apps.indexOf(app);
-                $scope.apps.splice(position, 1);
                 console.log(error)
             });
     };

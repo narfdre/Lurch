@@ -13,7 +13,7 @@ block content
                     th port
                 thead
                     tr(ng-repeat='app in apps')
-                            td {{app.name}}
+                            td: a(ng-href='http://127.0.0.1:{{app.port}}', target='_blank') {{app.name}}
                             td
                                 a(ng-hide='app.pid != 0', ng-click='startApp(app)').btn.btn-success Start
                                 a(ng-show='app.pid != 0', ng-click='stopApp(app)').btn.btn-warning Stop
@@ -31,8 +31,10 @@ block content
                         th name
                         th deploy
                     tbody
-                        tr(ng-repeat='repo in repos', ng-class='{disabled : deployed(repo.name)}')
-                            td: a(ng-click='!deployed(repo.name) && showRepo(repo.owner.login, repo.name)') {{repo.name}}
-                            td: a(ng-click='!deployed(repo.name) && deploy(repo.clone_url, repo.name)') deploy
+                        tr(ng-repeat='repo in repos', ng-class='{disabled : deployed(repo.name), loading : loading(repo.name)}')
+                            td: a(ng-href='{{repo.html_url}}', target='_blank') {{repo.name}}
+                            td 
+                                a(ng-click='!deployed(repo.name) && !loading(repo.name) && deploy(repo.clone_url, repo.name)') deploy
+                                i.icon-spinner
                             
             div.span7

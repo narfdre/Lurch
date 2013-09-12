@@ -2,6 +2,29 @@ body {
   padding: 40px;
 }
 
-.disabled{background-color: rgba(150,150,150,0.1);}
-.disabled a{color: rgba(0,0,0,0.6);}
-.disabled a:hover{text-decoration: none;}
+tr.disabled, tr.loading{background-color: rgba(150,150,150,0.1);}
+tr.disabled a, tr.loading a{color: rgba(0,0,0,0.6);}
+tr.disabled a:hover, tr.loading a:hover{text-decoration: none;}
+
+
+@-webkit-keyframes rotate {
+  from {
+    -webkit-transform: rotate(0deg);
+  }
+  to { 
+    -webkit-transform: rotate(360deg);
+  }
+}
+tr.disabled .icon-spinner, .icon-spinner{visibility: hidden;}
+
+tr.loading .icon-spinner{
+    display: inline-block;
+    visibility: visible;
+    padding-left: 5px;
+    vertical-align: middle;
+    -webkit-animation-name:             rotate;
+    -webkit-transform-origin:           65% 50%; 
+    -webkit-animation-duration:         1s; 
+    -webkit-animation-iteration-count:  infinite;
+    -webkit-animation-timing-function:  linear;
+}

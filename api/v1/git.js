@@ -47,6 +47,10 @@ exports.deployRepo = function(req, res){
 	var token = req.user.token
 	var url = req.body.url;
 	var appName = req.body.app;
+	var port = req.body.port || 0;
+	if(!url || !appName){
+		res.send(400, "Missing required data");
+	}
 	var gitUrl = getGitUrl(url, token);
 	var clone = spawn('git', ['clone', gitUrl], 
 					{cwd : appPath, detached: true});
@@ -57,7 +61,7 @@ exports.deployRepo = function(req, res){
 
 	clone.on('exit', function(code){
 		var Application = { name: appName
-						  , port: 0
+						  , port: port
 						  , pid : 0};
 		appsdb.loadDatabase();
 		appsdb.insert(Application, function (err, newDoc) {
