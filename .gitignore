@@ -53,3 +53,4 @@ node_modules
 # Lurch Files #
 ###############
 apps/*
+db/*
