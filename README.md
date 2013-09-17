@@ -1,4 +1,4 @@
-# Lurch
+# Lurch [![Build Status](https://travis-ci.org/narfdre/Lurch.png)](https://travis-ci.org/narfdre/Lurch)
 
 ### You Rang?
 
