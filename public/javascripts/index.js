@@ -2,7 +2,6 @@ var Lurch = angular.module('Lurch', []);
 
 Lurch.run(function($rootScope){
     $rootScope.host = window.location.hostname;
-    console.log($rootScope.host);
 });
 
 Lurch.controller('listCtrl', function($scope, $http){
