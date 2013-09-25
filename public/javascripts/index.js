@@ -1,50 +1,72 @@
 var Lurch = angular.module('Lurch', []);
 
 Lurch.controller('listCtrl', function($scope, $http){
+    loadApps();
     loadRepos();
     loadOrgs();
 
+    var loading = [];
+
+    $scope.$watch('currentOrg', function(newVal, oldVal){
+        if(newVal){
+            orgRepos(newVal.login);
+        }else{
+            loadRepos();
+        }
+    });
+
     $scope.deployed = function(repo){
-        if($scope.apps.indexOf(repo) != -1){
-            return true;
+        for(var i in $scope.apps){
+            if($scope.apps[i].name === repo){
+                return true;
+            }
         }
         return false;
     };
 
-    $scope.started = function(repo){
-        if($scope.running.indexOf(repo) != -1){
+    $scope.loading = function(appname){
+        if(loading.indexOf(appname) >= 0){
             return true;
         }
         return false;
-    };
+    }
 
     $scope.deploy = function(url, app){
+        loading.push(app);
+        var port = 0;
+        for(var i in $scope.apps){
+            if($scope.apps[i].port > port){
+                port = $scope.apps[i].port;
+            }
+        }
+        if(port > 0) {
+            port++;
+        }else{
+            port = 3001;
+        }
         $http.post('api/v1/git/clone', 
-                    {url : url, app : app})
-            .success(function(){
+                    {url : url, app : app, port: port})
+            .success(function(app){
                 $scope.apps.push(app);
+                var position = loading.indexOf(app);
+                loading.splice(position, 1);
             })
             .error(function(error, code){
-                if(error){
-                    console.log(error)
-                }else{
-                    $scope.apps.push(app);
-                }
+                console.log(error)
             });
     };
 
     $scope.startApp = function(app){
-        $http.post('/api/v1/apps/' + app + '/start', {})
-            .success(function(){
-                $scope.running.push(app);
+        $http.post('/api/v1/apps/' + app.name + '/start', {})
+            .success(function(pid){
+                app.pid = pid;
             });
     };
 
     $scope.stopApp = function(app){
-        $http.post('/api/v1/apps/' + app + '/stop', {})
+        $http.post('/api/v1/apps/' + app.name + '/stop', {})
             .success(function(){
-                var position = $scope.running.indexOf(app);
-                $scope.running.splice(position, 1);
+                app.pid = 0;
             });
     };
 
@@ -57,28 +79,46 @@ Lurch.controller('listCtrl', function($scope, $http){
     };
 
     $scope.updateApp = function(app){
-        $http.put('/api/v1/apps/' + app)
+        $http.put('/api/v1/apps/' + app + '/pull')
             .success(function(){
 
             });
     }
 
-    $scope.orgRepos = function(org){
-        $http.get('/api/v1/git/repos/' + org)
-            .success(function(repos){
-                $scope.repos = $scope.repos.concat(repos);
+    $scope.changePort = function(app){
+        console.log(app.port);
+        if(isNaN(app.port)){
+            
+        }else{
+            $http.put('/api/v1/apps/' + app.name + '/port/' + app.port)
+            .success(function(){
+
+            });
+        }
+    }
+
+    $scope.showRepo = function(owner, repo){
+        $http.get('/api/v1/git/' + owner + '/' + repo)
+            .success(function(repo){
+                $scope.currentRepo = repo;
             });
     }
 
-    function loadRepos(){
+    function orgRepos(org){
+        $http.get('/api/v1/git/repos/' + org)
+            .success(function(repos){
+                $scope.repos = repos;
+            });
+    }
+
+    function loadApps(){
         $http.get('/api/v1/apps')
             .success(function(apps){
                 $scope.apps = apps;
             });
-        $http.get('api/v1/apps/running')
-            .success(function(running){
-                $scope.running = running;
-            });
+    }
+
+    function loadRepos(){
         $http.get('api/v1/git/repos')
             .success(function(repos){
                 $scope.repos = repos;

@@ -2,18 +2,39 @@ extends layout
 
 block content
     div(ng-controller='listCtrl')
-        h3 Deployed Apps
-            ul(ng-repeat='app in apps')
-                li {{app}} 
-                    a(ng-hide='started(app)', ng-click='startApp(app)') Start
-                    a(ng-show='started(app)', ng-click='stopApp(app)') Stop
-                    a(ng-click='deleteApp(app)') Delete
-                    a(ng-click='updateApp(app)') Update
-        h3 Your Apps
-            ul(ng-repeat='repo in repos')
-                li(ng-hide='deployed(repo.name)') {{repo.name}} 
-                    a(ng-click='deploy(repo.clone_url, repo.name)') deploy
-        h3 Your Orgs
-            ul(ng-repeat='org in orgs')
-                li {{org.login}} 
-                    a(ng-click='orgRepos(org.login)') Show Repos
+        div.row
+            h3 Deployed Apps
+            table.table.table-striped
+                thead: tr
+                    th name
+                    th action
+                    th delete
+                    th pull
+                    th port
+                thead
+                    tr(ng-repeat='app in apps')
+                            td: a(ng-href='http://127.0.0.1:{{app.port}}', target='_blank') {{app.name}}
+                            td
+                                a(ng-hide='app.pid != 0', ng-click='startApp(app)').btn.btn-success Start
+                                a(ng-show='app.pid != 0', ng-click='stopApp(app)').btn.btn-warning Stop
+                            td: a(ng-click='deleteApp(app.name)').btn.btn-danger Delete
+                            td: a(ng-click='updateApp(app.name)').btn.btn-primary Update
+                            td: input(type='number', ng-model='app.port', ng-change='changePort(app)')
+            h3 Repos
+            div
+                span Orgs: 
+                select(ng-model='currentOrg', ng-options='org.login for org in orgs')
+                    option(value='') none
+            div.span5
+                table.table.table-striped
+                    thead: tr
+                        th name
+                        th deploy
+                    tbody
+                        tr(ng-repeat='repo in repos', ng-class='{disabled : deployed(repo.name), loading : loading(repo.name)}')
+                            td: a(ng-href='{{repo.html_url}}', target='_blank') {{repo.name}}
+                            td 
+                                a(ng-click='!deployed(repo.name) && !loading(repo.name) && deploy(repo.clone_url, repo.name)') deploy
+                                i.icon-spinner
+                            
+            div.span7

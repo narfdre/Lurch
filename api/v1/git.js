@@ -1,7 +1,9 @@
 var GitHubApi = require('github'),
 	exec      = require('child_process').exec,
 	spawn     = require('child_process').spawn,
-	storage   = require('node-persist'),
+	Nedb	  = require('nedb'),
+	appsdb	  = new Nedb({ filename: 'db/apps.db', autoload: true }),
+	userdb	  = new Nedb({ filename: 'db/users.db', autoload: true }),
 	rootPath  = require('path').dirname(require.main.filename),
 	appPath   = rootPath + '/apps';
 
@@ -11,10 +13,9 @@ var github = new GitHubApi({
 });
 
 exports.listOrgs = function(req, res){
-	var token = storage.getItem(req.user.username);
 	github.authenticate({
 		type: "oauth",
-		token: token
+		token: req.user.token
 	});
 	github.user.getOrgs({}, function(err, orgs){
 		res.send(orgs);
@@ -22,10 +23,9 @@ exports.listOrgs = function(req, res){
 }
 
 exports.listRepos = function(req, res){
-	var token = storage.getItem(req.user.username);
 	github.authenticate({
 		type: "oauth",
-		token: token
+		token: req.user.token
 	});
 	github.repos.getAll({}, function(err, repos){
 		res.send(repos);
@@ -34,10 +34,9 @@ exports.listRepos = function(req, res){
 
 exports.listOrgRepos = function(req, res){
 	var org = req.params.org;
-	var token = storage.getItem(req.user.username);
 	github.authenticate({
 		type: "oauth",
-		token: token
+		token: req.user.token
 	});
 	github.repos.getFromOrg({org: org}, function(err, repos){
 		res.send(repos);
@@ -45,8 +44,13 @@ exports.listOrgRepos = function(req, res){
 }
 
 exports.deployRepo = function(req, res){
-	var token = storage.getItem(req.user.username);
+	var token = req.user.token
 	var url = req.body.url;
+	var appName = req.body.app;
+	var port = req.body.port || 0;
+	if(!url || !appName){
+		res.send(400, "Missing required data");
+	}
 	var gitUrl = getGitUrl(url, token);
 	var clone = spawn('git', ['clone', gitUrl], 
 					{cwd : appPath, detached: true});
@@ -56,8 +60,13 @@ exports.deployRepo = function(req, res){
 	});
 
 	clone.on('exit', function(code){
-		console.log('process exited');
-		res.send(202, code);
+		var Application = { name: appName
+						  , port: port
+						  , pid : 0};
+		appsdb.loadDatabase();
+		appsdb.insert(Application, function (err, newDoc) {
+			res.send(200, newDoc);
+		});
 	});
 }
 

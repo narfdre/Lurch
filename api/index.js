@@ -8,10 +8,11 @@ exports.v1 = {
 	deleteApp	: manage.deleteApp,
 	start		: manage.startApp,
 	stop		: manage.stopApp,
-	runningApps : manage.runningApps,
-	update		: manage.updateRepo,
+	pull		: manage.pullRepo,
 	orgs		: git.listOrgs,
 	repos		: git.listRepos,
 	orgRepos	: git.listOrgRepos,
-	deploy		: git.deployRepo
+	deploy		: git.deployRepo,
+	changePort  : manage.changePort,
+	getAppLogs  : manage.getAppLogs
 };
