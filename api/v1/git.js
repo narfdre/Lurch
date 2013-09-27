@@ -60,9 +60,10 @@ exports.deployRepo = function(req, res){
 	});
 
 	clone.on('exit', function(code){
-		var Application = { name: appName
-						  , port: port
-						  , pid : 0};
+		var Application = { name : appName
+						  , port : port
+						  , pid  : 0
+						  , start: 0};
 		appsdb.loadDatabase();
 		appsdb.insert(Application, function (err, newDoc) {
 			res.send(200, newDoc);

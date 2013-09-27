@@ -11,6 +11,7 @@ block content
                     th delete
                     th pull
                     th port
+                    th uptime
                 thead
                     tr(ng-repeat='app in apps')
                             td: a(ng-href='http://{{host}}:{{app.port}}', target='_blank') {{app.name}}
@@ -20,6 +21,7 @@ block content
                             td: a(ng-click='deleteApp(app.name)').btn.btn-danger Delete
                             td: a(ng-click='updateApp(app.name)').btn.btn-primary Update
                             td: input(type='number', ng-model='app.port', ng-change='changePort(app)')
+                            td: span(ng-show='app.pid !=0').label.label-info {{difference(app.start)}}
             h3 Repos
             div
                 span Orgs: 

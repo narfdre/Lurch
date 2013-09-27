@@ -6,6 +6,7 @@ var express = require('express')
   , http 	  = require('http')
   , path 	  = require('path')
   , Nedb    = require('nedb')
+  , flash   = require('connect-flash')
   , usersdb = new Nedb({ filename: 'db/users.db', autoload: true })
   , appsdb  = new Nedb({ filename: 'db/apps.db', autoload: true})
   , exec    = require('child_process').exec
@@ -44,6 +45,7 @@ app.use(express.bodyParser());
 app.use(express.methodOverride());
 app.use(express.cookieParser('jaredsmom'));
 app.use(express.session({secret: 'jaredsmom'}));
+app.use(flash());
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(app.router);
@@ -70,7 +72,7 @@ app.get('/logout', function(req, res){
 });
 
 app.get('/github/auth', 
-  passport.authenticate('github', { failureRedirect: '/' }),
+  passport.authenticate('github', { failureRedirect: '/'}),
   function(req, res) {
     res.redirect('/app');
 });

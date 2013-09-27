@@ -11,6 +11,13 @@ Lurch.controller('listCtrl', function($scope, $http){
 
     var loading = [];
 
+    $scope.difference = function(start){
+        console.log(start);
+        console.log(new Date());
+        var diff = countdown(new Date(start), new Date());
+        return diff.days + " " + diff.hours + ":" + diff.minutes + ":" + diff.seconds;
+    }
+
     $scope.$watch('currentOrg', function(newVal, oldVal){
         if(newVal){
             orgRepos(newVal.login);
@@ -64,6 +71,7 @@ Lurch.controller('listCtrl', function($scope, $http){
         $http.post('/api/v1/apps/' + app.name + '/start', {})
             .success(function(pid){
                 app.pid = pid;
+                app.start = new Date();
             });
     };
 
@@ -71,6 +79,7 @@ Lurch.controller('listCtrl', function($scope, $http){
         $http.post('/api/v1/apps/' + app.name + '/stop', {})
             .success(function(){
                 app.pid = 0;
+                app.start = 0;
             });
     };
 

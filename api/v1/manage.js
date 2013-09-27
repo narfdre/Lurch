@@ -69,7 +69,7 @@ exports.startApp = function(req, res){
 						});
 		var pid = start.pid;
 		
-		appsdb.update({ name: appName}, { $set: { pid: pid}}, {}, function (err, numReplaced) {
+		appsdb.update({ name: appName}, { $set: { pid: pid, start: new Date()}}, {}, function (err, numReplaced) {
 	  		if(err){
 	  			console.log(err);
 	  		}
@@ -88,7 +88,7 @@ exports.stopApp = function(req, res){
   		var command = ['kill', doc.pid].join(' ');
 		var clone = exec(command, function(error, stdOut, stdErr){
 			if(!error){
-				appsdb.update({ name: appName}, { $set: { pid: 0}}, {}, function (err, numReplaced) {
+				appsdb.update({ name: appName}, { $set: { pid: 0, start: 0}}, {}, function (err, numReplaced) {
 			  		if(err){
 			  			console.log(err);
 			  			res.send(500, err);
